@@ -5,6 +5,9 @@
 # Note: The pygame tutorial by Eddie Sharick was used for the GUI engine. The GUI code was altered by Boo Sung Kim to
 # fit in with the rest of the project.
 #
+import logging
+
+import Piece
 import chess_engine
 import pygame as py
 
@@ -18,6 +21,7 @@ SQ_SIZE = HEIGHT // DIMENSION  # the size of each of the squares in the board
 MAX_FPS = 15  # FPS for animations
 IMAGES = {}  # images for the chess pieces
 colors = [py.Color("white"), py.Color("gray")]
+
 
 # TODO: AI black has been worked on. Mirror progress for other two modes
 def load_images():
@@ -57,6 +61,7 @@ def draw_pieces(screen, game_state):
     :param screen:          -- the pygame screen
     :param game_state:      -- the current state of the chess game
     '''
+    state = ''
     for r in range(DIMENSION):
         for c in range(DIMENSION):
             piece = game_state.get_piece(r, c)
@@ -85,23 +90,74 @@ def highlight_square(screen, game_state, valid_moves, square_selected):
                 screen.blit(s, (move[1] * SQ_SIZE, move[0] * SQ_SIZE))
 
 
+def game_state_log(game_state, white_turns_with_all_pieces, black_turns_with_all_pieces):
+    pieces_white = 0
+    pieces_black = 0
+    for r in range(DIMENSION):
+        for c in range(DIMENSION):
+            piece = game_state.get_piece(r, c)
+            if piece is not Player.EMPTY:
+                piece_name = piece.get_name()
+                color = 'white' if piece.get_player() is Player.PLAYER_1 else 'black'
+                if color == Player.PLAYER_1:
+                    pieces_white += 1
+                else:
+                    pieces_black += 1
+                state = f'piece: {piece_name}, location: ({r}-{c}), color: {color}'
+                logging.info(f'{state}')
+
+    if pieces_white < 16 and white_turns_with_all_pieces > -1:
+        logging.info(f'\nwhite turns with all pieces: {white_turns_with_all_pieces}\n')
+        white_turns_with_all_pieces = -1
+    elif pieces_white == 16:
+        white_turns_with_all_pieces += 1
+
+    if pieces_black < 16 and black_turns_with_all_pieces > -1:
+        logging.info(f'\nblack turns with all pieces: {black_turns_with_all_pieces}\n')
+        black_turns_with_all_pieces = -1
+    elif pieces_black == 16:
+        black_turns_with_all_pieces += 1
+    return white_turns_with_all_pieces, black_turns_with_all_pieces
+
+
 def main():
+    white_turns_with_all_pieces = 0
+    black_turns_with_all_pieces = 0
+    knight_nove_counter = 0
+    console_handler = logging.StreamHandler()
+    logging.basicConfig(level=logging.INFO,
+                        format='%(asctime)s - %(levelname)s - %(message)s - %(filename)s:%(lineno)d - '
+                               '%( ''source_class)s:%(source_function)s')
+    gui_logger = logging.getLogger('gui_logger')
+    gui_logger = logging.LoggerAdapter(gui_logger, {'source_class': 'chess_gui'})
+    gui_logger.info('One player', extra={'source_function': 'main'})
+
     # Check for the number of players and the color of the AI
     human_player = ""
+    number_of_players_msg_printed = False
     while True:
         try:
             number_of_players = input("How many players (1 or 2)?\n")
             if int(number_of_players) == 1:
+                if not number_of_players_msg_printed:
+                    gui_logger.info('One player', extra={'source_function': 'main'})
+                    number_of_players_msg_printed = True
                 number_of_players = 1
+
                 while True:
                     human_player = input("What color do you want to play (w or b)?\n")
                     if human_player is "w" or human_player is "b":
+                        logging.info('white start')
                         break
                     else:
                         print("Enter w or b.\n")
                 break
             elif int(number_of_players) == 2:
-                number_of_players = 2
+                if not number_of_players_msg_printed:
+                    gui_logger.info('Two players', extra={'source_function': 'main'})
+                    logging.info('white start')
+                    number_of_players_msg_printed = True
+                    number_of_players = 2
                 break
             else:
                 print("Enter 1 or 2.\n")
@@ -149,6 +205,16 @@ def main():
                         else:
                             game_state.move_piece((player_clicks[0][0], player_clicks[0][1]),
                                                   (player_clicks[1][0], player_clicks[1][1]), False)
+
+                            if game_state.get_piece(player_clicks[1][0], player_clicks[1][1]).get_name() == 'n':
+                                knight_nove_counter += 1
+                                logging.info(f'Number of knight moves: {knight_nove_counter}',
+                                             extra={'source_function': 'move_piece'})
+
+                            white_turns_with_all_pieces, black_turns_with_all_pieces = game_state_log(game_state,
+                                                                                                      white_turns_with_all_pieces,
+                                                                                                      black_turns_with_all_pieces)
+
                             square_selected = ()
                             player_clicks = []
                             valid_moves = []

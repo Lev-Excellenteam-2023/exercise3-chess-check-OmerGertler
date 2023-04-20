@@ -16,6 +16,7 @@ class chess_ai:
     evaluate board
     get the value of each piece
     '''
+
     def minimax_white(self, game_state, depth, alpha, beta, maximizing_player, player_color):
         csc = game_state.checkmate_stalemate_checker()
         if maximizing_player:
@@ -143,19 +144,6 @@ class chess_ai:
         if player is Player.PLAYER_1:
             if piece.is_player("black"):
                 if piece.get_name() is "k":
-                    return -1000
-                elif piece.get_name() is "q":
-                    return -100
-                elif piece.get_name() is "r":
-                    return -50
-                elif piece.get_name() is "b":
-                    return -30
-                elif piece.get_name() is "n":
-                    return -30
-                elif piece.get_name() is "p":
-                    return -10
-            else:
-                if piece.get_name() is "k":
                     return 1000
                 elif piece.get_name() is "q":
                     return 100
@@ -167,6 +155,50 @@ class chess_ai:
                     return 30
                 elif piece.get_name() is "p":
                     return 10
+
+            else:
+                if piece.get_name() is "k":
+                    return -1000
+                elif piece.get_name() is "q":
+                    return -100
+                elif piece.get_name() is "r":
+                    return -50
+                elif piece.get_name() is "b":
+                    return -30
+                elif piece.get_name() is "n":
+                    return -30
+                elif piece.get_name() is "p":
+                    return -10
+
+            '''
+            I exchanged the positive and negative return values of the black player (the former version is below),
+             so the black player receive right scores as well as the white. (Omer Gertler)
+            '''
+            #     if piece.get_name() is "k":
+            #         return -1000
+            #     elif piece.get_name() is "q":
+            #         return -100
+            #     elif piece.get_name() is "r":
+            #         return -50
+            #     elif piece.get_name() is "b":
+            #         return -30
+            #     elif piece.get_name() is "n":
+            #         return -30
+            #     elif piece.get_name() is "p":
+            #         return -10
+            # else:
+            #     if piece.get_name() is "k":
+            #         return 1000
+            #     elif piece.get_name() is "q":
+            #         return 100
+            #     elif piece.get_name() is "r":
+            #         return 50
+            #     elif piece.get_name() is "b":
+            #         return 30
+            #     elif piece.get_name() is "n":
+            #         return 30
+            #     elif piece.get_name() is "p":
+            #         return 10
         else:
             if piece.is_player("white"):
                 if piece.get_name() is "k":
