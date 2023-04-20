@@ -6,6 +6,7 @@
 #
 from Piece import Rook, Knight, Bishop, Queen, King, Pawn
 from enums import Player
+import logging
 
 '''
 r \ c     0           1           2           3           4           5           6           7 
@@ -26,6 +27,10 @@ r \ c     0           1           2           3           4           5         
 # TODO: move logs - fix king castle boolean update
 # TODO: change move method argument about is_ai into something more elegant
 class game_state:
+
+    console_handler = logging.StreamHandler()
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
     # Initialize 2D array to represent the chess board
     def __init__(self):
         # The board is a 2D array
@@ -221,11 +226,20 @@ class game_state:
         all_black_moves = self.get_all_legal_moves(Player.PLAYER_2)
         if self._is_check and self.whose_turn() and not all_white_moves:
             print("white lost")
+            lost_log_msg_printed = False
+            if not lost_log_msg_printed:
+                logging.info('white lost')
+                lost_log_msg_printed = True
             return 0
         elif self._is_check and not self.whose_turn() and not all_black_moves:
             print("black lost")
+            lost_log_msg_printed = False
+            if not lost_log_msg_printed:
+                logging.info('black lost')
+                lost_log_msg_printed = True
             return 1
         elif not all_white_moves and not all_black_moves:
+            logging.info('stalemate')
             return 2
         else:
             return 3
@@ -454,6 +468,21 @@ class game_state:
                     else:
                         self.move_log.append(chess_move(starting_square, ending_square, self, self._is_check))
                         self.can_en_passant_bool = False
+
+                # elif moving_piece.get_name() is "n":
+                #     log_msg_printed = False
+                #     if not log_msg_printed:
+                #         logging.basicConfig(level=logging.INFO,
+                #                             format='%(asctime)s - %(levelname)s - %(message)s - %(filename)s:%(lineno)d - '
+                #                                    '%( ''source_class)s:%(source_function)s')
+                #         engine_logger = logging.getLogger('engine_logger')
+                #         engine_logger = logging.LoggerAdapter(engine_logger, {'source_class': 'chess_engine'})
+                #         engine_logger.info('One player', extra={'source_function': 'main'})
+                #
+                #         engine_logger.info(f'Number of knight moves: {self.knight_nove_counter}', extra={'source_function': 'move_piece'})
+                #         self.knight_nove_counter += 1
+                #         log_msg_printed = True
+
                 else:
                     self.move_log.append(chess_move(starting_square, ending_square, self, self._is_check))
                     self.can_en_passant_bool = False
@@ -854,7 +883,12 @@ class game_state:
                     # self._is_check = True
                     _checks.append((king_location_row + row_change[i], king_location_col + col_change[i]))
         # print([_checks, _pins, _pins_check])
-        return [_pins_check, _pins, _pins_check]
+        '''
+        # the return value below didn't return the "_checks" list, so the 
+        # program couldn't identify check states.
+        '''
+        # return [_pins_check, _pins, _pins_check]
+        return [_checks, _pins, _pins_check]
 
 
 class chess_move():
